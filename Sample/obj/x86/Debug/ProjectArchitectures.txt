@@ -1,0 +1,2 @@
+C:\Users\contrerasl\GitHub\FrostedGlassBehavior\FrostedGlassBehavior\FrostedGlassBehavior.csproj;x86
+C:\Users\contrerasl\GitHub\FrostedGlassBehavior\Sample\Sample.csproj;x86
