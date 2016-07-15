@@ -1,18 +1,16 @@
 ﻿using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Effects;
 using System;
+using System.Diagnostics;
 using System.Linq;
-using System.Numerics;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Graphics.Display;
 using Windows.Graphics.Imaging;
 using Windows.Storage.Streams;
-using Windows.UI;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 
 namespace FrostedGlassBehavior
@@ -114,6 +112,6 @@ namespace FrostedGlassBehavior
       image.SetSource(stream);
       return image;
     }
-    
+
   }
 }

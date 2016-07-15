@@ -1,9 +1,7 @@
 ﻿using Microsoft.Xaml.Interactivity;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Diagnostics;
+using System.Threading;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -15,24 +13,55 @@ namespace FrostedGlassBehavior
   public class FrostedGlassBehavior : Behavior<FrameworkElement>
   {
     static BitmapImage _blurredBackground = null;
-    static int _tickCtr = 0;
     static bool _isBlurred = false;
 
     Frame _layoutRoot;
     DispatcherTimer _timer = new DispatcherTimer();
+    DispatcherTimer _resizeTimer = new DispatcherTimer();
     FrameworkElement _panel;
+    int _tickCounter = 0;
+    private class StoppedResizingEventArgs : EventArgs
+    {
+    }
+
+    private event EventHandler<StoppedResizingEventArgs> StoppedResizing;
 
     protected override void OnAttached()
     {
       _panel = this.AssociatedObject as FrameworkElement;
       _layoutRoot = (Window.Current.Content as Frame);
       _panel.Loaded += Panel_Loaded;
+      StoppedResizing += FrostedGlassBehavior_StoppedResizing;
+    }
+
+    private void FrostedGlassBehavior_StoppedResizing(object sender, StoppedResizingEventArgs e)
+    {
+      Debug.WriteLine("StoppedResizing");
+      Refresh();
     }
 
     private void Layoutroot_SizeChanged(object sender, SizeChangedEventArgs e)
     {
+      _tickCounter = 0;
+      if (!_resizeTimer.IsEnabled)
+      {
+        _resizeTimer.Tick += _resizeTimer_Tick;
+        _resizeTimer.Interval = new TimeSpan(0,0,0,0,100);
+        _resizeTimer.Start();
+      }
       _layoutRoot.SizeChanged -= Layoutroot_SizeChanged;
-      Refresh();
+    }
+
+    private void _resizeTimer_Tick(object sender, object e)
+    {
+      Debug.WriteLine("Tick counter " + _tickCounter);
+      _tickCounter++;
+      if (_tickCounter > 1)
+      {
+        _tickCounter = 0; 
+        StoppedResizing?.Invoke(this, new StoppedResizingEventArgs());        
+        (sender as DispatcherTimer).Stop(); 
+      }
     }
 
     private void _layoutRoot_Navigated(object sender, Windows.UI.Xaml.Navigation.NavigationEventArgs e)
@@ -46,11 +75,9 @@ namespace FrostedGlassBehavior
     {
       _layoutRoot.SizeChanged -= Layoutroot_SizeChanged;
       _blurredBackground = null;
-      _tickCtr = 0;
       _isBlurred = false;
       _timer.Start();
     }
-
 
     private async void _timer_Tick(object sender, object e)
     {
@@ -81,16 +108,15 @@ namespace FrostedGlassBehavior
         _panel.Visibility = Visibility.Visible;
         (sender as DispatcherTimer).Stop();
         _layoutRoot.SizeChanged += Layoutroot_SizeChanged;
-        _layoutRoot.Navigated += _layoutRoot_Navigated; ;
+        _layoutRoot.Navigated += _layoutRoot_Navigated;
       }
-      _tickCtr++;
     }
 
 
     private void Panel_Loaded(object sender, RoutedEventArgs e)
     {
       _panel.Loaded -= Panel_Loaded;
-      _timer.Interval = new TimeSpan(10);
+      _timer.Interval = new TimeSpan(0,0,0,0,100);
       _timer.Tick += _timer_Tick;
       _timer.Start();
     }
