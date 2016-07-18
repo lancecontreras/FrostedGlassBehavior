@@ -17,17 +17,18 @@ namespace FrostedGlassBehavior
 {
   public static class Extensions
   {
-    public static Point GetCoordinates(this FrameworkElement element, UIElement parent = null, bool zero = false)
+    public static Point GetCoordinates(this FrameworkElement element, UIElement parent = null, bool getCenterPoint = false)
     {
       if (parent == null)
         parent = Window.Current.Content;
 
       var transform = element.TransformToVisual(parent);
       Point point;
-      if (zero)
-        point = transform.TransformPoint(new Point(0, 0));
-      else
+      if (getCenterPoint)
         point = transform.TransformPoint(new Point(element.ActualWidth / 2, element.ActualHeight / 2));
+      else
+        point = transform.TransformPoint(new Point(0, 0));
+
       return point;
     }
 

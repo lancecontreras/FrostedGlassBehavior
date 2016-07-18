@@ -46,7 +46,7 @@ namespace FrostedGlassBehavior
       if (!_resizeTimer.IsEnabled)
       {
         _resizeTimer.Tick += _resizeTimer_Tick;
-        _resizeTimer.Interval = new TimeSpan(0,0,0,0,100);
+        _resizeTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
         _resizeTimer.Start();
       }
       _layoutRoot.SizeChanged -= Layoutroot_SizeChanged;
@@ -58,9 +58,9 @@ namespace FrostedGlassBehavior
       _tickCounter++;
       if (_tickCounter > 1)
       {
-        _tickCounter = 0; 
-        StoppedResizing?.Invoke(this, new StoppedResizingEventArgs());        
-        (sender as DispatcherTimer).Stop(); 
+        _tickCounter = 0;
+        StoppedResizing?.Invoke(this, new StoppedResizingEventArgs());
+        (sender as DispatcherTimer).Stop();
       }
     }
 
@@ -83,7 +83,7 @@ namespace FrostedGlassBehavior
     {
       if (_panel.Visibility == Visibility.Visible)
         _panel.Visibility = Visibility.Collapsed;
-      if (_isBlurred == false && _panel.Visibility == Visibility.Collapsed)
+      else if (_isBlurred == false && _panel.Visibility == Visibility.Collapsed)
       {
         if (_blurredBackground == null)
         {
@@ -91,10 +91,10 @@ namespace FrostedGlassBehavior
           _isBlurred = true;
         }
       }
-      if (_isBlurred)
+      else if (_isBlurred)
       {
-        Point panelPoint = _panel.GetCoordinates(_layoutRoot, false);
-        Point layoutRootPoint = _layoutRoot.GetCoordinates(_layoutRoot, false);
+        Point panelPoint = _panel.GetCoordinates(_layoutRoot, true);
+        Point layoutRootPoint = _layoutRoot.GetCoordinates(_layoutRoot, true);
 
         var distance = GetDistance(panelPoint, layoutRootPoint);
         Transform moveTransform = new TranslateTransform() { X = distance.X, Y = distance.Y };
@@ -116,7 +116,7 @@ namespace FrostedGlassBehavior
     private void Panel_Loaded(object sender, RoutedEventArgs e)
     {
       _panel.Loaded -= Panel_Loaded;
-      _timer.Interval = new TimeSpan(0,0,0,0,100);
+      _timer.Interval = new TimeSpan(0, 0, 0, 0, 100);
       _timer.Tick += _timer_Tick;
       _timer.Start();
     }
