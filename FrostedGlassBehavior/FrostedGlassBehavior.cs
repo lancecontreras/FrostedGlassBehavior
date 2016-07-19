@@ -6,6 +6,7 @@ using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Media.Imaging;
 
 namespace FrostedGlassBehavior
@@ -14,32 +15,57 @@ namespace FrostedGlassBehavior
   {
     static BitmapImage _blurredBackground = null;
     static bool _isBlurred = false;
-
     Frame _layoutRoot;
     DispatcherTimer _timer = new DispatcherTimer();
     DispatcherTimer _resizeTimer = new DispatcherTimer();
     FrameworkElement _panel;
+    Storyboard fadeInAnimation;
     int _tickCounter = 0;
-    private class StoppedResizingEventArgs : EventArgs
-    {
-    }
 
+    private class StoppedResizingEventArgs : EventArgs { }
     private event EventHandler<StoppedResizingEventArgs> StoppedResizing;
-
     protected override void OnAttached()
     {
       _panel = this.AssociatedObject as FrameworkElement;
       _layoutRoot = (Window.Current.Content as Frame);
+      InitializeStoryBoard();
       _panel.Loaded += Panel_Loaded;
       StoppedResizing += FrostedGlassBehavior_StoppedResizing;
     }
+    void InitializeStoryBoard()
+    {
+      fadeInAnimation = new Storyboard();
+      ObjectAnimationUsingKeyFrames visibilityKeyFrames = new ObjectAnimationUsingKeyFrames();
+      DiscreteObjectKeyFrame keyFrame = new DiscreteObjectKeyFrame();
+      keyFrame.KeyTime = TimeSpan.FromMilliseconds(200);
+      keyFrame.Value = Visibility.Visible;
+      visibilityKeyFrames.KeyFrames.Add(keyFrame);
+      Storyboard.SetTarget(visibilityKeyFrames, _panel);
+      Storyboard.SetTargetProperty(visibilityKeyFrames, "Visibility");
 
+      DoubleAnimationUsingKeyFrames doubleAnimationKeyFrame = new DoubleAnimationUsingKeyFrames();
+      EasingDoubleKeyFrame edk1 = new EasingDoubleKeyFrame();
+      edk1.KeyTime = TimeSpan.FromMilliseconds(100);
+      edk1.Value = 0;
+      EasingDoubleKeyFrame edk2 = new EasingDoubleKeyFrame();
+      edk2.KeyTime = TimeSpan.FromMilliseconds(200);
+      edk2.Value = 0;
+      EasingDoubleKeyFrame edk3 = new EasingDoubleKeyFrame();
+      edk3.KeyTime = TimeSpan.FromMilliseconds(500);
+      edk3.Value = 1;
+      doubleAnimationKeyFrame.KeyFrames.Add(edk1);
+      doubleAnimationKeyFrame.KeyFrames.Add(edk2);
+      doubleAnimationKeyFrame.KeyFrames.Add(edk3);
+      Storyboard.SetTarget(doubleAnimationKeyFrame, _panel);
+      Storyboard.SetTargetProperty(doubleAnimationKeyFrame, "Opacity");
+      fadeInAnimation.Children.Add(visibilityKeyFrames);
+      fadeInAnimation.Children.Add(doubleAnimationKeyFrame);
+    }
     private void FrostedGlassBehavior_StoppedResizing(object sender, StoppedResizingEventArgs e)
     {
       Debug.WriteLine("StoppedResizing");
       Refresh();
     }
-
     private void Layoutroot_SizeChanged(object sender, SizeChangedEventArgs e)
     {
       _tickCounter = 0;
@@ -51,7 +77,6 @@ namespace FrostedGlassBehavior
       }
       _layoutRoot.SizeChanged -= Layoutroot_SizeChanged;
     }
-
     private void _resizeTimer_Tick(object sender, object e)
     {
       Debug.WriteLine("Tick counter " + _tickCounter);
@@ -63,14 +88,11 @@ namespace FrostedGlassBehavior
         (sender as DispatcherTimer).Stop();
       }
     }
-
     private void _layoutRoot_Navigated(object sender, Windows.UI.Xaml.Navigation.NavigationEventArgs e)
     {
       _layoutRoot.Navigated -= _layoutRoot_Navigated;
       Refresh();
     }
-
-
     void Refresh()
     {
       _layoutRoot.SizeChanged -= Layoutroot_SizeChanged;
@@ -78,7 +100,6 @@ namespace FrostedGlassBehavior
       _isBlurred = false;
       _timer.Start();
     }
-
     private async void _timer_Tick(object sender, object e)
     {
       if (_panel.Visibility == Visibility.Visible)
@@ -105,14 +126,12 @@ namespace FrostedGlassBehavior
         if (_panel is Panel)
           (_panel as Panel).Background = backgroundBrush;
 
-        _panel.Visibility = Visibility.Visible;
+        fadeInAnimation.Begin();
         (sender as DispatcherTimer).Stop();
         _layoutRoot.SizeChanged += Layoutroot_SizeChanged;
         _layoutRoot.Navigated += _layoutRoot_Navigated;
       }
     }
-
-
     private void Panel_Loaded(object sender, RoutedEventArgs e)
     {
       _panel.Loaded -= Panel_Loaded;
@@ -120,7 +139,6 @@ namespace FrostedGlassBehavior
       _timer.Tick += _timer_Tick;
       _timer.Start();
     }
-
     protected override void OnDetaching()
     {
       //base.OnDetaching();
