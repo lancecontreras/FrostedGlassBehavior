@@ -6,6 +6,7 @@ using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Media.Imaging;
 
 namespace FrostedGlassBehavior
@@ -19,6 +20,8 @@ namespace FrostedGlassBehavior
     DispatcherTimer _timer = new DispatcherTimer();
     DispatcherTimer _resizeTimer = new DispatcherTimer();
     FrameworkElement _panel;
+    Storyboard fadeInAnimation; 
+
     int _tickCounter = 0;
     private class StoppedResizingEventArgs : EventArgs
     {
@@ -31,6 +34,7 @@ namespace FrostedGlassBehavior
       _panel = this.AssociatedObject as FrameworkElement;
       _layoutRoot = (Window.Current.Content as Frame);
       _panel.Loaded += Panel_Loaded;
+      InitializeStoryBoard(); 
       StoppedResizing += FrostedGlassBehavior_StoppedResizing;
     }
 
@@ -105,7 +109,7 @@ namespace FrostedGlassBehavior
         if (_panel is Panel)
           (_panel as Panel).Background = backgroundBrush;
 
-        _panel.Visibility = Visibility.Visible;
+        fadeInAnimation.Begin(); 
         (sender as DispatcherTimer).Stop();
         _layoutRoot.SizeChanged += Layoutroot_SizeChanged;
         _layoutRoot.Navigated += _layoutRoot_Navigated;
@@ -129,6 +133,35 @@ namespace FrostedGlassBehavior
     private Point GetDistance(Point p, Point p2)
     {
       return new Point(((-1 * p2.X) + p.X) * -1, ((-1 * p2.Y) + p.Y) * -1);
+    }
+    void InitializeStoryBoard()
+    {
+      fadeInAnimation = new Storyboard();
+      ObjectAnimationUsingKeyFrames visibilityKeyFrames = new ObjectAnimationUsingKeyFrames();
+      DiscreteObjectKeyFrame keyFrame = new DiscreteObjectKeyFrame();
+      keyFrame.KeyTime = TimeSpan.FromMilliseconds(200);
+      keyFrame.Value = Visibility.Visible;
+      visibilityKeyFrames.KeyFrames.Add(keyFrame);
+      Storyboard.SetTarget(visibilityKeyFrames, _panel);
+      Storyboard.SetTargetProperty(visibilityKeyFrames, "Visibility");
+
+      DoubleAnimationUsingKeyFrames doubleAnimationKeyFrame = new DoubleAnimationUsingKeyFrames();
+      EasingDoubleKeyFrame edk1 = new EasingDoubleKeyFrame();
+      edk1.KeyTime = TimeSpan.FromMilliseconds(100);
+      edk1.Value = 0;
+      EasingDoubleKeyFrame edk2 = new EasingDoubleKeyFrame();
+      edk2.KeyTime = TimeSpan.FromMilliseconds(200);
+      edk2.Value = 0;
+      EasingDoubleKeyFrame edk3 = new EasingDoubleKeyFrame();
+      edk3.KeyTime = TimeSpan.FromMilliseconds(500);
+      edk3.Value = 1;
+      doubleAnimationKeyFrame.KeyFrames.Add(edk1);
+      doubleAnimationKeyFrame.KeyFrames.Add(edk2);
+      doubleAnimationKeyFrame.KeyFrames.Add(edk3);
+      Storyboard.SetTarget(doubleAnimationKeyFrame, _panel);
+      Storyboard.SetTargetProperty(doubleAnimationKeyFrame, "Opacity");
+      fadeInAnimation.Children.Add(visibilityKeyFrames);
+      fadeInAnimation.Children.Add(doubleAnimationKeyFrame);
     }
   }
 }
