@@ -16,4 +16,7 @@ Usage:
 </Border>
 ```
 
+##Update: Windows 10 Fall Creator's update now supports acrylic. 
+[Acrylic Style](https://docs.microsoft.com/en-us/windows/uwp/style/acrylic)
+
 ![Image of Yaktocat](https://github.com/lancecontreras/FrostedGlassBehavior/blob/master/ScreenShot.PNG)
